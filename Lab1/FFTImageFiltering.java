@@ -1,13 +1,20 @@
 package Lab1;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.io.File;
+import java.io.IOException;
+
 public class FFTImageFiltering {
 
-    public static int N = 512; // Image Size
+    public static int N = 1024; // Image Size
 
     public static void main(String[] args) throws Exception {
 
         double[][] X = new double[N][N]; // Creation of Two Dimensional Array: Column Size - N Row Size - N
-        ReadPGM.read(X, "lena.ascii.pgm", N); // Reading of the greyscale image
+        //ReadPGM.read(X, "./pics/lena.ascii.pgm", N); // Reading of the greyscale image
+        readPNG(X, "./pics/shib2048.png");
 
         long startTime = System.currentTimeMillis(); // Take recording of time at start of runtime
 
@@ -86,6 +93,23 @@ public class FFTImageFiltering {
 
         transpose(re) ;
         transpose(im) ;
+    }
+
+    // Function used to readPNG files as if they were a PGM file using image density
+    public static void readPNG(double[][] density, String filename) {
+
+        BufferedImage img = null; // or whatever
+        try {
+            img = ImageIO.read(new File(filename));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Raster ras = img.getData();
+        for (int i = 0 ; i < N ; i++) {
+            for (int j = 0 ; j < N ; j++) {
+                density [i] [N - 1 - j] = ras.getSample(i, j, 0) ; }
+        }
     }
 }
 

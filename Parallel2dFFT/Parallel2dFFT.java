@@ -14,9 +14,10 @@ public class Parallel2dFFT extends Thread {
     public static int N = 2048;
 
     // Number of Threads
-    final static int P = 4;
+    final static int P = 2;
     // Variable me for Thread Parameter
     int me;
+    //final static int count = 10;
     // Creation of CyclicBarrier used to synchronise data between threads
     static CyclicBarrier cyclicBarrier =  new CyclicBarrier(P);
     // Creates variable B, used to determine the amount of 'work' each thread is allocated
@@ -36,37 +37,39 @@ public class Parallel2dFFT extends Thread {
         // Creation of Two Dimensional Array: Column Size - N Row Size - N
         double[][] X = new double[N][N];
         // Reading of the greyscale image
-//      ReadPGM.read(X, "lena.ascii.pgm", N);
-        readPNG(X, "C://Users/Bradley/Desktop/realterry.png");
+        //ReadPGM.read(X, "./pics/lena.ascii.pgm", N);
+        readPNG(X, "./pics/shib2048.png");
 
+        //for (int c = 0; c < count; c++) {
 
-        DisplayDensity display =
-                new DisplayDensity(X, N, "Original Image"); // Displays the Original image
+            DisplayDensity display =
+                    new DisplayDensity(X, N, "Original Image"); // Displays the Original image
 
-        // Create array for in-place FFT, and copy original data to it
-        for (int k = 0; k < N; k++) {
-            for (int l = 0; l < N; l++) {
-                CRe[k][l] = X[k][l];
+            // Create array for in-place FFT, and copy original data to it
+            for (int k = 0; k < N; k++) {
+                for (int l = 0; l < N; l++) {
+                    CRe[k][l] = X[k][l];
+                }
             }
-        }
 
-        //TODO: Creation of threads based on number of P
-        Parallel2dFFT[] threads = new Parallel2dFFT[P];
-        for (int i = 0; i < P; i++) {
-            threads[i] = new Parallel2dFFT(i);
-            threads[i].start();
-        }
+            //TODO: Creation of threads based on number of P
+            Parallel2dFFT[] threads = new Parallel2dFFT[P];
+            for (int i = 0; i < P; i++) {
+                threads[i] = new Parallel2dFFT(i);
+                threads[i].start();
+            }
 
-        long startTime = System.currentTimeMillis(); // Take recording of time at start of runtime
+            long startTime = System.currentTimeMillis(); // Take recording of time at start of runtime
 
-        for (int i = 0; i < P; i++) {
-            threads[i].join();
-        }
+            for (int i = 0; i < P; i++) {
+                threads[i].join();
+            }
 
-        // Record End Time
-        long endTime = System.currentTimeMillis();
-        // Output End Time - Start Time
-        System.out.println(endTime - startTime + "ms");
+            // Record End Time
+            long endTime = System.currentTimeMillis();
+            // Output End Time - Start Time
+            System.out.println(endTime - startTime + "ms");
+        //}
     }
 
     //TODO: Cyclic barrier synchronisation method, used for java threads as seen in Lab...
@@ -84,9 +87,9 @@ public class Parallel2dFFT extends Thread {
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < i; j++) {
-                 double current = a[i][j];
-                 a[i][j] = a[j][i];
-                 a[j][i] = current;
+                double current = a[i][j];
+                a[i][j] = a[j][i];
+                a[j][i] = current;
             }
         }
     }
@@ -114,7 +117,7 @@ public class Parallel2dFFT extends Thread {
         synch();
 
         // Inverse Fourier Transform to reconstruct Image
-       fft2d(reconRe, reconIm, -1);  // Inverse Fourier transform
+        fft2d(reconRe, reconIm, -1);  // Inverse Fourier transform
 
 
         // Outputs reconstructed image from Inverse Fourier Transform
@@ -122,7 +125,7 @@ public class Parallel2dFFT extends Thread {
             DisplayDensity display3 =
                     new DisplayDensity(reconRe, N, "Reconstructed Image");
         }
-   }
+    }
 
     /* Possibly: Loop here using begin and end instead of N (if that's applicable), then let
         the transpose happen before looping the same way again?
@@ -166,7 +169,7 @@ public class Parallel2dFFT extends Thread {
             transpose(re) ;
             transpose(im) ;
         }
-}
+    }
 
     // Function used to readPNG files as if they were a PGM file using image density
     public static void readPNG(double[][] density, String filename) {
