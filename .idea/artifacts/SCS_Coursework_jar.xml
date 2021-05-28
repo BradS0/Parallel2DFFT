@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SCS Coursework:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SCS_Coursework_jar</output-path>
+    <root id="archive" name="SCS Coursework.jar">
+      <element id="module-output" name="SCS Coursework" />
+    </root>
+  </artifact>
+</component>

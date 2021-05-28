@@ -8,13 +8,13 @@ import java.io.IOException;
 
 public class FFTImageFiltering {
 
-    public static int N = 1024; // Image Size
+    public static int N = 256; // Image Size
 
     public static void main(String[] args) throws Exception {
 
         double[][] X = new double[N][N]; // Creation of Two Dimensional Array: Column Size - N Row Size - N
-        //ReadPGM.read(X, "./pics/lena.ascii.pgm", N); // Reading of the greyscale image
-        readPNG(X, "./pics/shib2048.png");
+        ReadPGM.read(X, "./pics/wolf.pgm", N); // Reading of the greyscale image
+        //readPNG(X, "./pics/shib8192.png");
 
         long startTime = System.currentTimeMillis(); // Take recording of time at start of runtime
 
@@ -32,12 +32,13 @@ public class FFTImageFiltering {
         // Call to fft2d to perform first Fourier Transform
         fft2d(CRe, CIm, 1);  // Fourier transform
 
+        // Filtering Code - Uncomment to use
 //        int cutoff = N / 16;  // for example
 //        for (int k = 0; k < N; k++) {
 //            int kSigned = k <= N / 2 ? k : k - N;
 //            for (int l = 0; l < N; l++) {
 //                int lSigned = l <= N / 2 ? l : l - N;
-//                if (Math.abs(kSigned) < cutoff || Math.abs(lSigned) < cutoff) {
+//                if (Math.abs(kSigned) > cutoff || Math.abs(lSigned) > cutoff) {
 //                    CRe[k][l] = 0;
 //                    CIm[k][l] = 0;
 //                }

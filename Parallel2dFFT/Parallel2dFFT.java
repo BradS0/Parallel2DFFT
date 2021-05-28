@@ -1,5 +1,4 @@
 package Parallel2dFFT;
-
 import java.io.IOException;
 import java.util.concurrent.CyclicBarrier;
 import java.io.File;
@@ -11,20 +10,25 @@ import javax.imageio.ImageIO;
 public class Parallel2dFFT extends Thread {
 
     // Image Size
-    public static int N = 2048;
+    public static int N;
 
     // Number of Threads
-    final static int P = 2;
+    static int P;
+
     // Variable me for Thread Parameter
     int me;
-    //final static int count = 10;
+
     // Creation of CyclicBarrier used to synchronise data between threads
-    static CyclicBarrier cyclicBarrier =  new CyclicBarrier(P);
+    static CyclicBarrier cyclicBarrier;
+
     // Creates variable B, used to determine the amount of 'work' each thread is allocated
-    final static int B = N/P;
+    static int B;
+
     // Creation of the empty two dimensional arrays used to copy data to and from during the fourier transformations
-    static double[][] CRe = new double[N][N], CIm = new double[N][N];
-    static double[][] reconRe = new double[N][N], reconIm = new double[N][N];
+    static double[][] CRe;
+    static double[][] CIm;
+    static double[][] reconRe;
+    static double[][] reconIm;
 
     // Class constructor
     public Parallel2dFFT(int me) {
@@ -34,16 +38,26 @@ public class Parallel2dFFT extends Thread {
 
     public static void main(String[] args) throws Exception {
 
+        N = Integer.parseInt(args[0]);
+        P = Integer.parseInt(args[1]);
+
+        B = N/P;
+        cyclicBarrier =  new CyclicBarrier(P);
+        CRe = new double[N][N];
+        CIm = new double[N][N];
+        reconRe = new double[N][N];
+        reconIm = new double[N][N];
+
         // Creation of Two Dimensional Array: Column Size - N Row Size - N
         double[][] X = new double[N][N];
-        // Reading of the greyscale image
-        //ReadPGM.read(X, "./pics/lena.ascii.pgm", N);
-        readPNG(X, "./pics/shib2048.png");
 
-        //for (int c = 0; c < count; c++) {
+        // Reading of the greyscale image - ReadPGM for PGM - readPNG for PNG
+        //ReadPGM.read(X, args[2], N);
+        readPNG(X, args[2]);
 
+            // Initial Image Output
             DisplayDensity display =
-                    new DisplayDensity(X, N, "Original Image"); // Displays the Original image
+                    new DisplayDensity(X, N, "Original Image");
 
             // Create array for in-place FFT, and copy original data to it
             for (int k = 0; k < N; k++) {
@@ -59,8 +73,10 @@ public class Parallel2dFFT extends Thread {
                 threads[i].start();
             }
 
-            long startTime = System.currentTimeMillis(); // Take recording of time at start of runtime
+            // Take recording of time at start of runtime
+            long startTime = System.currentTimeMillis();
 
+            // Collation of Thread Data
             for (int i = 0; i < P; i++) {
                 threads[i].join();
             }
@@ -68,11 +84,12 @@ public class Parallel2dFFT extends Thread {
             // Record End Time
             long endTime = System.currentTimeMillis();
             // Output End Time - Start Time
-            System.out.println(endTime - startTime + "ms");
-        //}
+            System.out.println(endTime - startTime);
+            // Close application windows upon completion (Uncomment for Testing using Script)
+            //System.exit(0);
     }
 
-    //TODO: Cyclic barrier synchronisation method, used for java threads as seen in Lab...
+    // Method to ensure thread-safe processing, will ensure all threads are done processing before continuing.
     static void synch() {
         try {
             cyclicBarrier.await();
@@ -98,6 +115,19 @@ public class Parallel2dFFT extends Thread {
 
         // Call to fft2d to perform first Fourier Transform
         fft2d(CRe, CIm, 1);  // Fourier transform
+
+        // FILTERING CODE:
+//        int cutoff = N / 16;  // for example
+//        for (int k = 0; k < N; k++) {
+//            int kSigned = k <= N / 2 ? k : k - N;
+//            for (int l = 0; l < N; l++) {
+//                int lSigned = l <= N / 2 ? l : l - N;
+//                if (Math.abs(kSigned) > cutoff || Math.abs(lSigned) > cutoff) {
+//                    CRe[k][l] = 0;
+//                    CIm[k][l] = 0;
+//                }
+//            }
+//        }
 
         // Displays Fourier Transformed Image
         if (me == 0) {
@@ -135,9 +165,6 @@ public class Parallel2dFFT extends Thread {
         // Values begin and end used to split 'work' between threads
         int begin = me * B;
         int end = begin + B;
-
-//        System.out.println(begin);
-//        System.out.println(end);
 
         // Run 1dFFT on the threads total amount of work
         for (int i = begin; i < end; i++){
